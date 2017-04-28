@@ -1,0 +1,147 @@
+/*
+ * 
+ */
+
+/* 
+ * File:   main.c
+ * Author: Iván
+ *
+ * Created on 26 de abril de 2017, 9:22
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+/*
+ * 
+ */
+
+void printInfo(int array[], int length, int sum){
+    printf("The set of numbers is ");
+    for(int i = 0; i < length; i++){
+        if(i==0){
+            printf("(%d",array[i]);
+        }
+        if(i!=0){
+             printf(",%d",array[i]);
+         }
+    }
+    printf(") and the sum is %d\n\n", sum);
+}
+
+void showSolutionArray(int array[], int length){
+    int sum = 0;
+    printf("The solution is the subset --> ");
+    for(int i = 0; i < length; i++){
+        if(i==0){
+            printf("(%d",array[i]);
+            sum = sum + array[i];
+        }
+        if(i!=0){
+             printf(",%d",array[i]);
+             sum = sum + array[i];
+         }
+    }
+    printf(") which sum is %d\n", sum);
+}
+
+void subsetSum(int array[], int target, int arrayLength)
+{
+    int counterReturnValue = 0;
+    int returnValue[arrayLength];
+    int matrix[arrayLength+1][target+1]; // Creates the matrix
+    
+    // if target is 0, we can use empty set
+    for(int i = 0; i <= arrayLength; i++){
+        matrix[i][0] = array[i];
+    }
+    
+    // Creates the matrix
+    for(int i = 0; i <= arrayLength; i++){
+        for(int j = 1; j <= target; j++){
+            // Checks if the row above has a 0 in the same column and if it does, that cell will be a 0 too
+            if(matrix[i-1][j] == 0 && i != 0){
+                matrix[i][j]=0;
+            }
+            // Subtract the current value of cell the target
+            else matrix[i][j] = j - matrix[i][0];
+            
+           // Subtract all posibilities of the other subarrays and refresh all cells of the row
+           if(matrix[i][j] > 0 && i != 0 && j != 0){
+                for(int x = i-1; x >= 0; x--){
+                    if(matrix[i][j] != 0 && matrix[i][j] - matrix[x][0] >= 0){
+                       matrix[i][j] = matrix[i][j] - matrix[x][0];
+                    }
+                }
+           }
+        }
+    }
+    //Fills the last row with the numbers 0,1,2,3... to the sum number to get a guide of what we are looking for   
+    for(int j = 0; j <= target; j++){
+        matrix[arrayLength][j] = j;
+    }
+    
+    int j = target;
+    
+    /************************************************************************************************************************************************************/
+    //FEASIBILITY it has the matrix as an input and it select the numbers of the array which form the solution array 
+    for(int i = arrayLength; i >= 0; i--){
+        while (j > 0){
+            if(matrix[i][j] == 0 &&  (matrix[i-1][j] != 0 || matrix[i-1][j] == 0) && matrix[i][0] <= j){
+                //printf("%d ", matrix[i][0]);                      
+                j = j - matrix[i][0];
+                //printf("%d\n", j);
+                returnValue[counterReturnValue] = matrix[i][0];
+                counterReturnValue++;
+                break;
+            }
+            if(matrix[i-1][j] == 0 || matrix[i][0] > j){break;}
+            j--;
+        }
+        if(j == 0){break;}
+    }
+    //END OF FEASIBILTY
+    /************************************************************************************************************************************************************/
+    
+    /*for(int i = 0; i <= arrayLength; i++){
+        for(int j = 0; j <= target; j++){
+        printf("%d ", matrix[i][j]);
+        }
+        printf("\n");
+    }*/
+    
+    showSolutionArray(returnValue, counterReturnValue);
+}
+
+void obtainArray(int array[], int n) {
+    int i;
+    for(i = 0; i < n;i++) {//array[0]=1,array[1]=2...
+        array[i] = i+1;
+    }
+    //FOR GENERATING RANDOM ARRAY OF LENGHT N
+    /*srand(time(NULL));
+    printf("Generated array with %d elements: ",n);
+    for (int i = 1; i < n; i++) {
+        if (i==1) {
+            array[i] = rand() % 100;
+            printf("{%d",array[i]); 
+        }
+        array[i] = rand() % 100;
+        printf(",%d",array[i]);
+    }*/
+}
+
+int main(int argc, char* argv[]) {
+    if (argc!=3) {//In case the function is call in a wrong way
+        printf("Error\nThe way to call this program is <Name> <int1> <int2> where:\nName: Name of the executable file\nint1: How many numbers the array is going to contain\nint2: The sum we want to find");
+        return 0;
+    }
+    int length = atoi(argv[1]);//Converts char* to int and stores it in n
+    double sum = atof(argv[2]);//Converts char* to double and stores it in n
+    int array[length];
+    obtainArray(array, length);//Calls function obtainArray
+    printInfo(array, length, sum);
+    subsetSum(array, sum, length);
+}
+
